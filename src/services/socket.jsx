@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 
 const token = sessionStorage.getItem('token');
 
-const socket = io(import.meta.env.REACT_APP_BACKEND_URL , {
+const socket = io(import.meta.env.VITE_API_URL , {
   auth: { token }, // Invia il token per autenticazione
   reconnection: true,
   reconnectionAttempts: 5,

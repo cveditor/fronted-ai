@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.REACT_APP_BACKEND_URL ,
+  baseURL: import.meta.env.VITE_API_URL, // VITE usa VITE_API_URL, non REACT_APP
+  withCredentials: true,
 });
 
 // Interceptor per aggiungere automaticamente il token
@@ -25,8 +26,9 @@ API.interceptors.response.use(
   }
 );
 
+// Funzioni per autenticazione
 export const loginUser = (data) => API.post('/auth/login', data);
 export const registerUser = (data) => API.post('/auth/register', data);
-export const getProfile = () => API.get('/user/profile');
+export const getProfile = () => API.get('/users/profile');
 
 export default API;
