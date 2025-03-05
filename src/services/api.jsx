@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // VITE usa VITE_API_URL, non REACT_APP
+  baseURL: import.meta.env.VITE_BACKEND_URL + '/api', // Backend URL + /api
   withCredentials: true,
 });
 
@@ -14,7 +14,7 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor per gestire errori 401 (token scaduto)
+// Interceptor per gestire errori 401
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -26,9 +26,8 @@ API.interceptors.response.use(
   }
 );
 
-// Funzioni per autenticazione
 export const loginUser = (data) => API.post('/auth/login', data);
 export const registerUser = (data) => API.post('/auth/register', data);
-export const getProfile = () => API.get('/users/profile');
+export const getProfile = () => API.get('/user/profile');
 
 export default API;
