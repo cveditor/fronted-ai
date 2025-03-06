@@ -16,7 +16,7 @@ const Login = () => {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post('/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', { email, password });
       login(res.data.user, res.data.token);
       setSuccess('Login effettuato con successo!');
       navigate('/dashboard'); // Reindirizza alla dashboard
