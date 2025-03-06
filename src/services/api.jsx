@@ -2,10 +2,10 @@ import axios from 'axios';
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
-  withCredentials: true, // Se hai cookie o token
+  withCredentials: true,
 });
 
-// Interceptor per il token
+// Interceptor per aggiungere il token JWT
 API.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token');
   if (token) {
@@ -14,7 +14,7 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Error handling
+// Gestione errori (es. token scaduto)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -28,6 +28,6 @@ API.interceptors.response.use(
 
 export const loginUser = (data) => API.post('/auth/login', data);
 export const registerUser = (data) => API.post('/auth/register', data);
-export const getProfile = () => API.get('/user/profile');
+export const getProfile = () => API.get('/users/profile');
 
 export default API;
