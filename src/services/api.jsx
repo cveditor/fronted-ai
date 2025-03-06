@@ -5,7 +5,6 @@ const API = axios.create({
   withCredentials: true,
 });
 
-// Interceptor per aggiungere il token JWT
 API.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token');
   if (token) {
@@ -14,7 +13,6 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Gestione errori (es. token scaduto)
 API.interceptors.response.use(
   (response) => response,
   (error) => {
