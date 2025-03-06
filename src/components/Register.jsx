@@ -20,6 +20,7 @@ const Register = () => {
         password,
       });
       setSuccess('Registrazione avvenuta con successo! Puoi effettuare il login.');
+      navigate('/dashboard');
       setUsername('');
       setEmail('');
       setPassword('');
