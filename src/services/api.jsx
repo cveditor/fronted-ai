@@ -1,11 +1,11 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL + '/api', // Backend URL + /api
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_BACKEND_URL,
+  withCredentials: true, // Se hai cookie o token
 });
 
-// Interceptor per aggiungere automaticamente il token
+// Interceptor per il token
 API.interceptors.request.use((config) => {
   const token = sessionStorage.getItem('token');
   if (token) {
@@ -14,7 +14,7 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor per gestire errori 401
+// Error handling
 API.interceptors.response.use(
   (response) => response,
   (error) => {
