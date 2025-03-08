@@ -13,18 +13,21 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
-      login(res.data.user, res.data.token);
-      setSuccess('Login effettuato con successo!');
-      navigate('/dashboard'); // Reindirizza alla dashboard
+      const res = await loginUser({ email, password });
+      console.log('📦 Risposta del server:', res.data);
+  
+      if (res.data && res.data.userId && res.data.token) {
+        login({ id: res.data.userId, username: res.data.username }, res.data.token);
+        navigate('/dashboard');
+      } else {
+        console.error('❌ Dati mancanti nella risposta:', res.data);
+      }
     } catch (err) {
-      setError('Email o password non corretti');
-      console.error('Errore nel login:', err);
+      console.error('Errore nel login:', err.response ? err.response.data : err.message);
     }
   };
+  
 
   return (
     <div className="p-10 max-w-md mx-auto">
