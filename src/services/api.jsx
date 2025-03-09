@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://backend-ai-pxw3.onrender.com',
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   withCredentials: true,
 });
 
@@ -24,7 +24,7 @@ API.interceptors.response.use(
   }
 );
 
-export const loginUser = (data) => API.post('/auth/login', data);
+export const loginUser = (data) => API.post('api/auth/login', data);
 export const registerUser = (data) => API.post('/auth/register', data);
 export const getProfile = () => API.get('/users/profile');
 
