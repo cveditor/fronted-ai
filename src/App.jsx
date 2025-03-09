@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import Onboarding from './pages/Onboarding';
 import Login from './components/Login';
 import Register from './components/Register';
 import Profile from './pages/Profile';
@@ -34,6 +35,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
 
               {/* Rotte protette */}
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
