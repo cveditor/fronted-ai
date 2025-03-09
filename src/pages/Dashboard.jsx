@@ -33,7 +33,7 @@ const Dashboard = () => {
   const fetchAnalytics = async () => {
     const token = localStorage.getItem('token');
     try {
-      const { data } = await axios.get('/analytics/user', {
+      const { data } = await axios.get('api/analytics/user', {
         headers: { Authorization: `Bearer ${token}` },
         params: { startDate, endDate, platform },
       });
@@ -48,7 +48,7 @@ const Dashboard = () => {
   const fetchUnreadCount = async () => {
     const token = localStorage.getItem('token');
     try {
-      const { data } = await axios.get('/notifications/count-unread', {
+      const { data } = await axios.get('api/notifications/count-unread', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUnreadCount(data.unreadCount);
@@ -60,7 +60,7 @@ const Dashboard = () => {
   const fetchTrends = async () => {
     setLoadingTrends(true);
     try {
-      const { data } = await axios.get(`/trends?platform=${trendPlatform}`);
+      const { data } = await axios.get(`api/trends?platform=${trendPlatform}`);
       setTrends(data);
     } catch (error) {
       console.error('Errore nel caricamento dei trend:', error);

@@ -12,7 +12,7 @@ const NotificationSettings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(`/users/${userId}/notification-settings`);
+        const response = await axios.get(`api/users/${userId}/notification-settings`);
         setSettings(response.data);
       } catch (error) {
         console.error('Errore nel caricamento delle impostazioni:', error);
@@ -33,7 +33,7 @@ const NotificationSettings = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/users/update-notification-settings', { userId, ...settings });
+      await axios.post('api/users/update-notification-settings', { userId, ...settings });
       alert('Impostazioni aggiornate!');
     } catch (error) {
       console.error('Errore nell’aggiornamento delle impostazioni:', error);

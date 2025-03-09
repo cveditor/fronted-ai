@@ -14,7 +14,7 @@ const NotificationHistory = () => {
   const fetchNotifications = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get('/notifications/history', {
+      const response = await axios.get('api/notifications/history', {
         headers: { Authorization: `Bearer ${token}` },
         params: { status: activeTab, page: currentPage, limit: 10 },
       });
@@ -28,7 +28,7 @@ const NotificationHistory = () => {
   const markAsRead = async (notificationId) => {
     const token = localStorage.getItem('token');
     try {
-      await axios.patch(`/notifications/mark-as-read/${notificationId}`, {}, {
+      await axios.patch(`api/notifications/mark-as-read/${notificationId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

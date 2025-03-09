@@ -20,7 +20,7 @@ const Profile = () => {
 
   const fetchUser = async () => {
     try {
-      const { data } = await axios.get(`/user/${userId}`);
+      const { data } = await axios.get(`api/user/${userId}`);
       setUser(data);
       setSelectedPlan(data.subscriptionPlan); // Imposta il piano attuale
       setLoading(false);
@@ -36,7 +36,7 @@ const Profile = () => {
     setSelectedPlan(newPlan);
 
     try {
-      await axios.post('/subscriptions/update', {
+      await axios.post('api/subscriptions/update', {
         userId,
         plan: newPlan,
       });

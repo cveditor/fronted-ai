@@ -20,7 +20,7 @@ const TriggerSettings = () => {
   const fetchTriggers = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await axios.get('/triggers', {
+      const response = await axios.get('api/triggers', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTriggers(response.data);
@@ -33,7 +33,7 @@ const TriggerSettings = () => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      await axios.post('/triggers', formData, {
+      await axios.post('api/triggers', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Trigger aggiunto!');

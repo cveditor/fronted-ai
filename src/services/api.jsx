@@ -23,6 +23,14 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+// Notifiche
+export const getUnreadNotifications = () => API.get('api/notifications/history?status=unread');
+export const getNotificationHistory = (page = 1, limit = 10) => 
+  API.get(`api/notifications/history?page=${page}&limit=${limit}`);
+
+// Analytics
+export const getUserAnalytics = (startDate, endDate, platform) => 
+  API.get(`api/analytics/user?startDate=${startDate}&endDate=${endDate}&platform=${platform}`);
 
 export const loginUser = (data) => API.post('api/auth/login', data);
 export const registerUser = (data) => API.post('api/auth/register', data);
