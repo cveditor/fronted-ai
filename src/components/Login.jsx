@@ -15,10 +15,17 @@ const Login = () => {
     try {
       const res = await loginUser({ email, password });
       console.log('📦 Risposta dal server:', res.data);
-
-      if (res.data && res.data.userId && res.data.token) {
-        login({ id: res.data.userId, username: res.data.username }, res.data.token);
-        navigate('/dashboard');
+  
+      if (res.data?.userId && res.data?.token) {
+        await login(
+          { id: res.data.userId, username: res.data.username }, 
+          res.data.token
+        );
+  
+        // Forza la navigazione dopo il login
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100); // Piccolo delay per permettere l'aggiornamento dello stato
       } else {
         setError('Credenziali non valide');
       }
@@ -61,3 +68,4 @@ const Login = () => {
 };
 
 export default Login;
+
