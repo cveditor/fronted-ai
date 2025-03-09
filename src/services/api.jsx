@@ -25,7 +25,7 @@ API.interceptors.response.use(
 );
 
 export const loginUser = (data) => API.post('api/auth/login', data);
-export const registerUser = (data) => API.post('/auth/register', data);
-export const getProfile = () => API.get('/users/profile');
+export const registerUser = (data) => API.post('api/auth/register', data);
+export const getProfile = () => API.get('api/users/profile');
 
 export default API;
