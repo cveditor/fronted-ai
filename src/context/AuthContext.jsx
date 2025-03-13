@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import axios from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -8,19 +9,26 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
-    const storedUser = sessionStorage.getItem('userId');
-
-    if (token && storedUser) {
-      setUser({ id: storedUser });
+    const userData = JSON.parse(sessionStorage.getItem('user'));
+    if (token && userData) {
+      setUser(userData);
     }
-
-    setLoading(false); 
+    setLoading(false);
   }, []);
 
-  const login = (userData, token) => {
-    sessionStorage.setItem('token', token);
-    sessionStorage.setItem('userId', userData.id);
-    setUser(userData);
+  const login = async (email, password) => {
+    try {
+      const { data } = await axios.post('/auth/login', { email, password });
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user', JSON.stringify({ id: data.userId, username: data.username }));
+      setUser({ id: data.userId, username: data.username });
+    } catch (err) {
+      console.error('Errore nel login:', err.response?.data?.message || err.message);
+    }
+  };
+
+  const socialLogin = (provider) => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/${provider}`;
   };
 
   const logout = () => {
@@ -29,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, socialLogin, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

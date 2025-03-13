@@ -3,189 +3,153 @@ import axios from '../services/api';
 import { Bar, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement } from 'chart.js';
 import socket from '../services/socket';
+import { motion } from 'framer-motion';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, BarElement, LineElement, PointElement);
 
 const Dashboard = () => {
   const [analytics, setAnalytics] = useState([]);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [platform, setPlatform] = useState('');
-  const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeTab, setActiveTab] = useState('analytics');
-  const [trends, setTrends] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [trendPlatform, setTrendPlatform] = useState('instagram');
-  const [loadingTrends, setLoadingTrends] = useState(false);
+  const [trends, setTrends] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState({ username: '', avatar: '', plan: 'base' });
+  const [darkMode, setDarkMode] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [filter, setFilter] = useState('7d');
 
   useEffect(() => {
     fetchAnalytics();
-    fetchUnreadCount();
+    fetchNotifications();
+    fetchUserInfo();
+
     socket.on('newNotification', (data) => {
       setNotifications((prev) => [data, ...prev]);
       setUnreadCount((prev) => prev + 1);
+      toast.info('Nuova notifica ricevuta!');
     });
 
     return () => socket.off('newNotification');
-  }, [startDate, endDate, platform]);
+  }, [filter]);
 
   const fetchAnalytics = async () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     try {
-      const { data } = await axios.get('api/analytics/user', {
+      const { data } = await axios.get(`/api/analytics/user?filter=${filter}`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { startDate, endDate, platform },
       });
       setAnalytics(data);
     } catch (error) {
-      console.error('Errore nel caricamento delle analytics:', error);
+      toast.error('Errore nel caricamento delle analytics');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUnreadCount = async () => {
-    const token = localStorage.getItem('token');
+  const fetchNotifications = async () => {
+    const token = sessionStorage.getItem('token');
     try {
-      const { data } = await axios.get('api/notifications/count-unread', {
+      const { data } = await axios.get('/api/notifications', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
     } catch (error) {
-      console.error('Errore nel conteggio delle notifiche:', error);
+      toast.error('Errore nel caricamento delle notifiche');
     }
   };
 
-  const fetchTrends = async () => {
-    setLoadingTrends(true);
+  const fetchUserInfo = async () => {
+    const token = sessionStorage.getItem('token');
     try {
-      const { data } = await axios.get(`api/trends?platform=${trendPlatform}`);
-      setTrends(data);
+      const { data } = await axios.get('/api/user', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser({ username: data.username, avatar: data.avatar || 'https://via.placeholder.com/40', plan: data.plan });
     } catch (error) {
-      console.error('Errore nel caricamento dei trend:', error);
-    } finally {
-      setLoadingTrends(false);
+      toast.error('Errore nel caricamento del profilo utente');
     }
   };
 
-  const labels = analytics.map((item) => item.platform);
+  const updatePlan = async (plan) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const { data } = await axios.post('/api/user/update-plan', { plan }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser((prevUser) => ({ ...prevUser, plan: data.plan }));
+      setSuccessMessage(`Piano aggiornato a ${data.plan}`);
+      toast.success(`Piano aggiornato a ${data.plan}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      toast.error('Errore nell aggiornamento del piano');
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const totalInteractions = analytics.reduce((sum, item) => sum + item.likes + item.comments + item.shares, 0);
+  const avgEngagementRate = (analytics.reduce((sum, item) => sum + item.engagementRate, 0) / analytics.length) * 100 || 0;
+
   const barData = {
-    labels,
+    labels: analytics.map((item) => item.platform),
     datasets: [
-      { label: 'Likes', data: analytics.map((item) => item.likes), backgroundColor: '#36A2EB' },
+      { label: 'Likes', data: analytics.map((item) => item.likes), backgroundColor: '#0070BA' },
       { label: 'Commenti', data: analytics.map((item) => item.comments), backgroundColor: '#FF6384' },
       { label: 'Condivisioni', data: analytics.map((item) => item.shares), backgroundColor: '#FFCE56' },
     ],
   };
 
   const lineData = {
-    labels,
+    labels: analytics.map((item) => item.platform),
     datasets: [
       {
         label: 'Engagement Rate (%)',
         data: analytics.map((item) => Math.round(item.engagementRate * 100)),
-        borderColor: '#4BC0C0',
-        backgroundColor: '#C9DE00',
+        borderColor: '#0070BA',
+        backgroundColor: '#00457C',
         fill: false,
         tension: 0.3,
       },
     ],
   };
 
-  if (loading) return <p className="text-center mt-20 text-2xl">Caricamento analytics...</p>;
+  if (loading) return <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mt-20 text-2xl">Caricamento dati...</motion.p>;
 
   return (
-    <div className="max-w-6xl mx-auto p-10">
-      <h1 className="text-4xl font-bold mb-8 text-center">Dashboard Analytics 🚀</h1>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`flex h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <aside className="w-64 bg-blue-900 text-white p-5">
+        <h1 className="text-2xl font-bold mb-8">🌟 Dashboard ({user.plan})</h1>
+        <nav className="flex flex-col space-y-4">
+          <button onClick={() => setActiveTab('analytics')} className="text-left p-2 rounded-lg">📊 Analytics</button>
+          {user.plan !== 'base' && <button onClick={() => setActiveTab('notifications')} className="text-left p-2 rounded-lg">🔔 Notifiche ({unreadCount})</button>}
+          {user.plan === 'enterprise' && <button onClick={() => setActiveTab('trends')} className="text-left p-2 rounded-lg">📈 Trend AI Avanzati</button>}
+        </nav>
+      </aside>
 
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex gap-4">
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`p-2 rounded ${activeTab === 'analytics' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          >
-            📊 Analytics
-          </button>
-          <button
-            onClick={() => setActiveTab('notifications')}
-            className={`p-2 rounded flex items-center gap-2 ${
-              activeTab === 'notifications' ? 'bg-blue-600 text-white' : 'bg-gray-200'
-            }`}
-          >
-            🔔 Notifiche
-            {unreadCount > 0 && <span className="bg-red-500 text-white rounded-full px-2 text-xs">{unreadCount}</span>}
-          </button>
-          <button
-            onClick={() => setActiveTab('trends')}
-            className={`p-2 rounded ${activeTab === 'trends' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-          >
-            🌟 Trend AI Predictor
-          </button>
-        </div>
-      </div>
-
-      {activeTab === 'analytics' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">📈 Interazioni</h2>
-            <Bar data={barData} />
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">📊 Engagement Rate</h2>
-            <Line data={lineData} />
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'notifications' && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">🔔 Notifiche Recenti</h2>
-          {notifications.length === 0 ? (
-            <p>Nessuna nuova notifica.</p>
-          ) : (
-            <ul className="space-y-4">
-              {notifications.map((notification, index) => (
-                <li key={index} className="p-4 bg-gray-100 rounded-md">
-                  <strong>{notification.platform}:</strong> {notification.message}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'trends' && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">🌟 Trend AI Predictor</h2>
-          <select
-            onChange={(e) => setTrendPlatform(e.target.value)}
-            value={trendPlatform}
-            className="p-2 border rounded-md mb-4"
-          >
-            <option value="instagram">Instagram</option>
-            <option value="tiktok">TikTok</option>
+      <main className="p-10 flex-1">
+        <h2 className="text-3xl font-bold mb-4">Benvenuto, {user.username}!</h2>
+        <p>Piano attuale: <strong>{user.plan}</strong></p>
+        <div className="my-6">
+          <label>Filtro periodo: </label>
+          <select onChange={(e) => setFilter(e.target.value)} value={filter} className="ml-2 p-2 border rounded">
+            <option value="7d">Ultimi 7 giorni</option>
+            <option value="30d">Ultimi 30 giorni</option>
           </select>
-          <button onClick={fetchTrends} className="bg-blue-600 text-white px-4 py-2 rounded-md mb-4">
-            Carica Trend
-          </button>
-
-          {loadingTrends ? (
-            <p>Caricamento trend...</p>
-          ) : (
-            <ul className="space-y-4">
-              {trends.map((item, index) => (
-                <li key={index} className="p-4 bg-gray-100 rounded-md">
-                  <strong>{item.trend}</strong>: {item.idea}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-      )}
-    </div>
+        <ToastContainer />
+      </main>
+    </motion.div>
   );
 };
 
 export default Dashboard;
+

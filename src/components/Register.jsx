@@ -1,30 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { FaGoogle, FaInstagram, FaTiktok } from 'react-icons/fa';
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    promoCode: '',
-  });
+  const { login, socialLogin } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const socialLogin = (provider) => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/${provider}`;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Dati inviati:', formData);
-    // Qui faremo la chiamata all'API per la registrazione manuale
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Errore nella registrazione');
+      login(data.user, data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
-    <div className="p-8 max-w-md mx-auto bg-white rounded-lg shadow-md">
+    <div className="p-10 max-w-md mx-auto bg-white rounded-lg shadow-md">
       <h2 className="text-3xl font-bold text-center mb-6">Registrati</h2>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="flex justify-center gap-4 mb-6">
         <button
@@ -47,37 +54,30 @@ const Register = () => {
         </button>
       </div>
 
-      <p className="text-center mb-4">Oppure crea un account manualmente:</p>
+      <p className="text-center mb-4 text-gray-500">Oppure registrati con la tua email:</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="w-full border p-2 rounded-md"
-          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-2 rounded-md"
         />
         <input
           type="password"
-          name="password"
           placeholder="Password"
-          onChange={handleChange}
-          className="w-full border p-2 rounded-md"
-          required
-        />
-        <input
-          type="text"
-          name="promoCode"
-          placeholder="Codice Promo (opzionale)"
-          onChange={handleChange}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 rounded-md"
         />
-
-        <p className="text-center text-sm text-gray-500">
-          ✅ Prova gratuita di 7 giorni inclusa!
-        </p>
-
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition"
@@ -85,6 +85,10 @@ const Register = () => {
           Registrati
         </button>
       </form>
+
+      <p className="text-center text-sm text-gray-500 mt-4">
+        Hai già un account? <a href="/login" className="text-blue-600 hover:underline">Accedi</a>
+      </p>
     </div>
   );
 };

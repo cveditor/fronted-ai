@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Notifications Test</title>
+</head>
+<body>
+  <h1>Test Real-Time Notifications & Analytics</h1>
+  
+  <button id="sendNotificationBtn">Invia Notifica</button>
+
+  <h2>Notifiche:</h2>
+  <ul id="notifications"></ul>
+
+  <h2>Analytics Live:</h2>
+  <ul id="analytics"></ul>
+
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:5000', {
+      withCredentials: true,
+      transports: ['websocket'],
+    });
+
+    // Unisciti a una stanza (sostituisci con userId dinamico)
+    socket.emit('joinRoom', 'user123');
+
+    // Ascolta le notifiche personali
+    socket.on('notification', (data) => {
+      const notifications = document.getElementById('notifications');
+      const li = document.createElement('li');
+      li.textContent = `${data.priority.toUpperCase()}: ${data.message}`;
+      notifications.appendChild(li);
+    });
+
+    // Ascolta le notifiche di gruppo
+    socket.on('groupNotification', (data) => {
+      const notifications = document.getElementById('notifications');
+      const li = document.createElement('li');
+      li.textContent = `GROUP (${data.priority}): ${data.message}`;
+      notifications.appendChild(li);
+    });
+
+    // Ascolta gli aggiornamenti delle analytics live
+    socket.on('analyticsUpdate', (data) => {
+      const analytics = document.getElementById('analytics');
+      analytics.innerHTML = '';
+      data.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = `Platform: ${item.platform}, Likes: ${item.likes}, Engagement Rate: ${item.engagementRate}`;
+        analytics.appendChild(li);
+      });
+    });
+
+    // Test per inviare una notifica personalizzata
+    document.getElementById('sendNotificationBtn').addEventListener('click', () => {
+      const userId = 'user123';
+      const message = 'Hai un nuovo aggiornamento!';
+      socket.emit('sendNotification', { userId, message, priority: 'high' });
+    });
+  </script>
+</body>
+</html>

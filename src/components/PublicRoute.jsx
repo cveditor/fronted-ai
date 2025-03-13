@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Spinner from './Spinner';
 
-const ProtectedRoute = ({ children }) => {
+const PublicRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -14,12 +14,13 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) return <Spinner />;
 
-  if (!isAuthenticated) {
-    console.warn('🔒 Accesso negato: utente non autenticato');
-    return <Navigate to="/login" replace state={{ from: window.location.pathname }} />;
+  if (isAuthenticated) {
+    console.info('✅ Utente già autenticato, reindirizzamento alla dashboard');
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export default PublicRoute;
+

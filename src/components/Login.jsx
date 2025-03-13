@@ -1,28 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { FaGoogle, FaInstagram, FaTiktok } from 'react-icons/fa';
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const { login, socialLogin } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSocialLogin = (provider) => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/${provider}`;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(email, password);
+    navigate('/dashboard');
   };
-
-  // Dopo il login social, catturiamo token e dati utente
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const userId = params.get('userId');
-    const username = params.get('username');
-
-    if (token && userId && username) {
-      login({ id: userId, username }, token);
-      navigate('/dashboard');
-    }
-  }, [login, navigate]);
 
   return (
     <div className="p-10 max-w-md mx-auto bg-white rounded-lg shadow-md">
@@ -30,19 +21,19 @@ const Login = () => {
 
       <div className="flex justify-center gap-4 mb-6">
         <button
-          onClick={() => handleSocialLogin('google')}
+          onClick={() => socialLogin('google')}
           className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
         >
           <FaGoogle /> Google
         </button>
         <button
-          onClick={() => handleSocialLogin('instagram')}
+          onClick={() => socialLogin('instagram')}
           className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
         >
           <FaInstagram /> Instagram
         </button>
         <button
-          onClick={() => handleSocialLogin('tiktok')}
+          onClick={() => socialLogin('tiktok')}
           className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition"
         >
           <FaTiktok /> TikTok
@@ -51,14 +42,18 @@ const Login = () => {
 
       <p className="text-center mb-4 text-gray-500">Oppure accedi con la tua email:</p>
 
-      <form className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           className="w-full border p-2 rounded-md"
         />
         <input
           type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           className="w-full border p-2 rounded-md"
         />
