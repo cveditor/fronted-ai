@@ -1,12 +1,11 @@
 import axios from 'axios';
-
 const API = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
   withCredentials: true,
 });
 
 API.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');  // 🔹 Usa localStorage invece di sessionStorage
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,14 +22,6 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-// Notifiche
-export const getUnreadNotifications = () => API.get('api/notifications/history?status=unread');
-export const getNotificationHistory = (page = 1, limit = 10) => 
-  API.get(`api/notifications/history?page=${page}&limit=${limit}`);
-
-// Analytics
-export const getUserAnalytics = (startDate, endDate, platform) => 
-  API.get(`api/analytics/user?startDate=${startDate}&endDate=${endDate}&platform=${platform}`);
 
 export const loginUser = (data) => API.post('api/auth/login', data);
 export const registerUser = (data) => API.post('api/auth/register', data);

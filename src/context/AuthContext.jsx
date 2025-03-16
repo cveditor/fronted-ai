@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from '../services/api';
+import API from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -8,8 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    const userData = JSON.parse(sessionStorage.getItem('user'));
+    const token = localStorage.getItem('token');  // 🔹 Usa localStorage
+    const userData = JSON.parse(localStorage.getItem('user'));  
     if (token && userData) {
       setUser(userData);
     }
@@ -18,26 +18,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const { data } = await axios.post('/auth/login', { email, password });
-      sessionStorage.setItem('token', data.token);
-      sessionStorage.setItem('user', JSON.stringify({ id: data.userId, username: data.username }));
-      setUser({ id: data.userId, username: data.username });
+      const { data } = await API.post('/api/auth/login', { email, password });
+      localStorage.setItem('token', data.token);  // 🔹 Salva nel localStorage
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
+      return true; // 🔹 Ritorna true se il login è riuscito
     } catch (err) {
       console.error('Errore nel login:', err.response?.data?.message || err.message);
+      return false; // 🔹 Ritorna false in caso di errore
     }
   };
 
-  const socialLogin = (provider) => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/${provider}`;
-  };
-
   const logout = () => {
-    sessionStorage.clear();
+    localStorage.clear();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, socialLogin, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

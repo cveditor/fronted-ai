@@ -11,8 +11,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
-    navigate('/dashboard');
+    const success = await login(email, password);  // 🔹 Aspetta il login
+    if (success) {
+      navigate('/dashboard');  // 🔹 Solo se il login è riuscito
+    } else {
+      alert('Errore nel login. Controlla le credenziali.');
+    }
   };
 
   return (
