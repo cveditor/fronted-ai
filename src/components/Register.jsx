@@ -1,30 +1,40 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import API from '../services/api'; // Usa API centralizzato
 import { FaGoogle, FaInstagram, FaTiktok } from 'react-icons/fa';
 
 const Register = () => {
-  const { login, socialLogin } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false); // Stato di caricamento
+
+  // Gestione input dinamica
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
+    // Controllo campi vuoti
+    if (!formData.username || !formData.email || !formData.password) {
+      setError('⚠️ Tutti i campi sono obbligatori.');
+      return;
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Errore nella registrazione');
-      login(data.user, data.token);
-      navigate('/dashboard');
+      setLoading(true);
+      const { user, token } = await API.post('/api/auth/register', formData);
+      login(user, token); // Aggiorna il contesto di autenticazione
+      navigate('/dashboard'); // Reindirizza dopo la registrazione
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || 'Errore nella registrazione');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -34,22 +44,13 @@ const Register = () => {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="flex justify-center gap-4 mb-6">
-        <button
-          onClick={() => socialLogin('google')}
-          className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-        >
+        <button className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
           <FaGoogle /> Google
         </button>
-        <button
-          onClick={() => socialLogin('instagram')}
-          className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
-        >
+        <button className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition">
           <FaInstagram /> Instagram
         </button>
-        <button
-          onClick={() => socialLogin('tiktok')}
-          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition"
-        >
+        <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition">
           <FaTiktok /> TikTok
         </button>
       </div>
@@ -59,30 +60,34 @@ const Register = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
+          name="username"
           placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={formData.username}
+          onChange={handleChange}
           className="w-full border p-2 rounded-md"
         />
         <input
           type="email"
+          name="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={handleChange}
           className="w-full border p-2 rounded-md"
         />
         <input
           type="password"
+          name="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleChange}
           className="w-full border p-2 rounded-md"
         />
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition"
+          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition disabled:bg-gray-400"
+          disabled={loading}
         >
-          Registrati
+          {loading ? 'Registrazione in corso...' : 'Registrati'}
         </button>
       </form>
 

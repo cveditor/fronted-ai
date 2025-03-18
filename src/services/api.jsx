@@ -17,7 +17,7 @@ API.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('Errore nella richiesta API:', error);
+    console.error('❌ Errore nella richiesta API:', error);
     return Promise.reject(error);
   }
 );
@@ -26,8 +26,8 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.error('Errore API:', error.response || error.message);
-    
+    console.error('❌ Errore API:', error.response?.data?.message || error.message);
+
     if (error.response?.status === 401) {
       console.warn('🔒 Token scaduto, effettuare il logout');
       localStorage.removeItem('token');
@@ -49,7 +49,7 @@ export const loginUser = async (data) => {
     }
     return response.data;
   } catch (error) {
-    console.error('Errore nel login:', error.response?.data?.message || error.message);
+    console.error('❌ Errore nel login:', error.response?.data?.message || error.message);
     throw error;
   }
 };
@@ -59,7 +59,7 @@ export const registerUser = async (data) => {
     const response = await API.post('/api/auth/register', data);
     return response.data;
   } catch (error) {
-    console.error('Errore nella registrazione:', error.response?.data?.message || error.message);
+    console.error('❌ Errore nella registrazione:', error.response?.data?.message || error.message);
     throw error;
   }
 };
@@ -69,7 +69,7 @@ export const getProfile = async () => {
     const response = await API.get('/api/users/profile');
     return response.data;
   } catch (error) {
-    console.error('Errore nel recupero del profilo:', error.response?.data?.message || error.message);
+    console.error('❌ Errore nel recupero del profilo:', error.response?.data?.message || error.message);
     throw error;
   }
 };
