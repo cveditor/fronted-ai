@@ -14,23 +14,30 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
-      localStorage.removeItem('user'); // Elimina dati corrotti
+      localStorage.removeItem('user'); // Rimuove dati corrotti
     }
   }, []);
 
   const login = async (email, password) => {
+    if (!email || !password) {
+      console.error('❌ Email e password sono richiesti');
+      return false;
+    }
+
     try {
       const response = await API.post('/api/auth/login', { email, password });
-      if (response.data.token) {
+      if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
+        return true;
       } else {
-        console.error('❌ Errore login: token non ricevuto');
+        console.error('❌ Errore login: token o user non ricevuti');
+        return false;
       }
     } catch (error) {
       console.error('❌ Errore login:', error.response?.data?.message || error.message);
-      throw error; // Rilancia l'errore per gestirlo nel frontend
+      return false;
     }
   };
 
