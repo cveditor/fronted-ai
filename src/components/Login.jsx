@@ -27,6 +27,7 @@ const Login = () => {
     try {
       setLoading(true);
       const response = await API.post('/api/auth/login', { email, password });
+      console.log('Risposta API:', response.data); // 🔍 Controlla la risposta dal server
 
       if (response.data.token) {
         login(response.data.user, response.data.token);
