@@ -14,23 +14,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
-    // Controllo campi vuoti
-    if (!email || !password) {
+    // ✅ Controllo campi vuoti
+    if (!email.trim() || !password.trim()) {
       setError('⚠️ Inserisci email e password.');
       return;
     }
 
     try {
       setLoading(true);
-      const { user, token } = await API.post('/api/auth/login', { email, password });
+      setError(''); // Resetta eventuali errori precedenti
 
-      // Salva i dati nel contesto e in localStorage
-      login(user, token);
-      navigate('/dashboard'); // Reindirizza dopo il login
+      const response = await API.post('/api/auth/login', { email, password });
+
+      if (response.data.token) {
+        login(response.data.user, response.data.token);
+        navigate('/dashboard'); // ✅ Reindirizza solo se il login ha successo
+      } else {
+        setError('❌ Errore: Token non ricevuto.');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Credenziali errate');
+      setError(err.response?.data?.message || '❌ Credenziali errate.');
     } finally {
       setLoading(false);
     }
@@ -42,13 +46,19 @@ const Login = () => {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="flex justify-center gap-4 mb-6">
-        <button className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
+        <button
+          className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+        >
           <FaGoogle /> Google
         </button>
-        <button className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition">
+        <button
+          className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition"
+        >
           <FaInstagram /> Instagram
         </button>
-        <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition">
+        <button
+          className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition"
+        >
           <FaTiktok /> TikTok
         </button>
       </div>
@@ -63,6 +73,7 @@ const Login = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border p-2 rounded-md"
+          required
         />
         <input
           type="password"
@@ -71,6 +82,7 @@ const Login = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border p-2 rounded-md"
+          required
         />
         <button
           type="submit"
