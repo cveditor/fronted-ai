@@ -15,6 +15,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    console.log('Email:', email, 'Password:', password); // 🔍 Controllo dati
+
 
     // ✅ Controllo se i campi sono vuoti
     if (!email.trim() || !password.trim()) {
