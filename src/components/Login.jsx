@@ -14,6 +14,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🟡 handleSubmit chiamato!"); // 👀 Verifica se la funzione viene chiamata
 
     // ✅ Controllo campi vuoti
     if (!email.trim() || !password.trim()) {
@@ -66,24 +67,23 @@ const Login = () => {
       <p className="text-center mb-4 text-gray-500">Oppure accedi con la tua email:</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border p-2 rounded-md"
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border p-2 rounded-md"
-          required
-        />
+       <input
+  type="email"
+  value={email}
+  onChange={(e) => {
+    console.log("✉️ Email cambiata:", e.target.value);
+    setEmail(e.target.value);
+  }}
+/>
+
+<input
+  type="password"
+  value={password}
+  onChange={(e) => {
+    console.log("🔑 Password cambiata:", e.target.value);
+    setPassword(e.target.value);
+  }}
+/>
         <button
           type="submit"
           className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-500 transition disabled:bg-gray-400"
