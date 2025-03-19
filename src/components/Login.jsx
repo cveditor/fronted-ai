@@ -28,8 +28,12 @@ const Login = () => {
       const success = await login(email, password);
 
       if (success) {
-        console.log('✅ Login riuscito! Reindirizzamento in corso...');
-        navigate('/dashboard');
+        if (response.data.redirectUrl) {
+          navigate(response.data.redirectUrl);
+        } else {
+          navigate('/dashboard'); // Fallback se non arriva un redirectUrl
+        }
+        
       } else {
         setError('❌ Credenziali errate o problema con il login.');
       }

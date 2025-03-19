@@ -19,18 +19,27 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    // Controllo campi vuoti
+  
     if (!formData.username || !formData.email || !formData.password) {
       setError('⚠️ Tutti i campi sono obbligatori.');
       return;
     }
-
+  
     try {
       setLoading(true);
-      const { user, token } = await API.post('/api/auth/register', formData);
-      login(user, token); // Aggiorna il contesto di autenticazione
-      navigate('/dashboard'); // Reindirizza dopo la registrazione
+      const response = await API.post('/api/auth/register', formData);
+  
+      console.log('📥 Risposta API registrazione:', response.data);
+  
+      if (response.data.token && response.data.user) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        login(response.data.user, response.data.token);
+  
+        window.location.href = response.data.redirectUrl;
+      } else {
+        setError('Errore: nessun token ricevuto.');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Errore nella registrazione');
     } finally {

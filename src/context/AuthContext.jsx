@@ -26,25 +26,20 @@ export const AuthProvider = ({ children }) => {
       console.error('❌ Email e password sono richiesti');
       return false;
     }
-
+  
     try {
       const response = await API.post('/api/auth/login', { email, password });
-
-      console.log('📥 Risposta API login:', response.data); // Debug
-
-      if (response.data.token) {
+  
+      console.log('📥 Risposta API login:', response.data);
+  
+      if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
-      
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-          setUser(response.data.user);
-        } else {
-          console.warn("⚠️ Nessun 'user' ricevuto dal backend.");
-        }
-      
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        setUser(response.data.user);
+  
         return true;
       } else {
-        console.error('❌ Errore login: token non ricevuto');
+        console.error('❌ Errore login: token o user non ricevuti');
         return false;
       }
     } catch (error) {
@@ -52,6 +47,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   };
+  
 
   const logout = () => {
     localStorage.removeItem('token');
