@@ -47,6 +47,16 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   };
+  const getProfile = async () => {
+    try {
+      const response = await API.get('/api/users/profile');
+      console.log('📥 Profilo utente ricevuto:', response.data); // Debug
+      return response.data;
+    } catch (error) {
+      console.error('❌ Errore nel recupero del profilo:', error.response?.data?.message || error.message);
+      return null;
+    }
+  };
   
 
   const logout = () => {
