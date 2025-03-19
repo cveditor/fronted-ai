@@ -15,35 +15,44 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    
     console.log('📝 Dati inseriti:', { email, password }); // Debug
-
+  
     if (!email.trim() || !password.trim()) {
       setError('⚠️ Inserisci email e password.');
       return;
     }
-
+  
     try {
       setLoading(true);
-      const success = await login(email, password);
-
-      if (success) {
+      const response = await API.post('/api/auth/login', { email, password });
+  
+      console.log('📥 Risposta API login:', response.data); // Debug
+  
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        login(response.data.user, response.data.token);
+  
+        console.log('🔑 Token salvato:', response.data.token);
+        console.log('👤 Utente salvato:', response.data.user);
+  
         if (response.data.redirectUrl) {
-          navigate(response.data.redirectUrl);
+          window.location.href = response.data.redirectUrl; // 🔹 Reindirizza
         } else {
-          navigate('/dashboard'); // Fallback se non arriva un redirectUrl
+          navigate('/dashboard'); // 🔹 Fallback su dashboard
         }
-        
       } else {
-        setError('❌ Credenziali errate o problema con il login.');
+        setError('Errore: nessun token ricevuto.');
       }
     } catch (err) {
-      console.error('❌ Errore nel login:', err);
-      setError('Errore durante il login, riprova.');
+      console.error('❌ Errore login:', err.response?.data?.message || err.message);
+      setError(err.response?.data?.message || 'Credenziali errate.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-10 max-w-md mx-auto bg-white rounded-lg shadow-md">
