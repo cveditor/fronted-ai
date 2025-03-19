@@ -18,11 +18,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (email, password) => {
-    if (!email || !password) {
-      console.error('❌ Email e password sono richiesti');
-      return false;
-    }
+  const login = (user, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    setUser(user);
+  };
 
     try {
       const response = await API.post('/api/auth/login', { email, password });
