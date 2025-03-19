@@ -15,10 +15,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    console.log('Email:', email, 'Password:', password); // 🔍 Controllo dati
 
+    console.log('📝 Dati inseriti:', { email, password }); // Debug
 
-    // ✅ Controllo se i campi sono vuoti
     if (!email.trim() || !password.trim()) {
       setError('⚠️ Inserisci email e password.');
       return;
@@ -26,17 +25,17 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const response = await API.post('/api/auth/login', { email, password });
-      console.log('Risposta API:', response.data); // 🔍 Controlla la risposta dal server
+      const success = await login(email, password);
 
-      if (response.data.token) {
-        login(response.data.user, response.data.token);
-        navigate('/dashboard'); // ✅ Reindirizza alla dashboard dopo il login
+      if (success) {
+        console.log('✅ Login riuscito! Reindirizzamento in corso...');
+        navigate('/dashboard');
       } else {
-        setError('Errore: nessun token ricevuto.');
+        setError('❌ Credenziali errate o problema con il login.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Credenziali errate.');
+      console.error('❌ Errore nel login:', err);
+      setError('Errore durante il login, riprova.');
     } finally {
       setLoading(false);
     }

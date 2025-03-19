@@ -9,23 +9,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+      const storedToken = localStorage.getItem('token');
+
+      if (storedUser && storedToken) {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
       localStorage.removeItem('user'); // Rimuove dati corrotti
+      localStorage.removeItem('token');
     }
   }, []);
 
-  const login = (user, token) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    setUser(user);
-  };
+  const login = async (email, password) => {
+    if (!email || !password) {
+      console.error('❌ Email e password sono richiesti');
+      return false;
+    }
 
     try {
       const response = await API.post('/api/auth/login', { email, password });
+
+      console.log('📥 Risposta API login:', response.data); // Debug
+
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
