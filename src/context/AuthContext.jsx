@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
   };
   const getProfile = async () => {
     try {
+      console.log('📡 Invio richiesta profilo con token:', localStorage.getItem('token')); // Debug
       const response = await API.get('/api/users/profile');
       console.log('📥 Profilo utente ricevuto:', response.data); // Debug
       return response.data;
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   };
+  
   
 
   const logout = () => {

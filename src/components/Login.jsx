@@ -32,16 +32,18 @@ const Login = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        login(response.data.user, response.data.token);
-  
+        
         console.log('🔑 Token salvato:', response.data.token);
         console.log('👤 Utente salvato:', response.data.user);
   
-        if (response.data.redirectUrl) {
-          window.location.href = response.data.redirectUrl; // 🔹 Reindirizza
-        } else {
-          navigate('/dashboard'); // 🔹 Fallback su dashboard
+        // 🔹 Recuperiamo il profilo subito dopo il login
+        const profile = await getProfile();
+        if (!profile) {
+          setError('⚠️ Errore nel recupero del profilo');
+          return;
         }
+  
+        navigate(response.data.redirectUrl || '/dashboard'); 
       } else {
         setError('Errore: nessun token ricevuto.');
       }
@@ -52,6 +54,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+  
   
 
   return (

@@ -26,13 +26,21 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.error('❌ Errore API:', error.response?.data?.message || error.message);
+    console.error('❌ Errore API:', error); // 🔍 Debug generale
+
+    if (error.response) {
+      console.log('📢 Errore risposta API:', error.response.status, error.response.data);
+    } else if (error.request) {
+      console.log('⚠️ Nessuna risposta dal server:', error.request);
+    } else {
+      console.log('🚨 Errore generico:', error.message);
+    }
 
     if (error.response?.status === 401) {
       console.warn('🔒 Token scaduto, effettuare il logout');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login'; // Redirect automatico al login
+      window.location.href = '/login';
     }
 
     return Promise.reject(error);
