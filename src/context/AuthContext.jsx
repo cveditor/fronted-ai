@@ -32,13 +32,19 @@ export const AuthProvider = ({ children }) => {
 
       console.log('📥 Risposta API login:', response.data); // Debug
 
-      if (response.data.token && response.data.user) {
+      if (response.data.token) {
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        setUser(response.data.user);
+      
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+          setUser(response.data.user);
+        } else {
+          console.warn("⚠️ Nessun 'user' ricevuto dal backend.");
+        }
+      
         return true;
       } else {
-        console.error('❌ Errore login: token o user non ricevuti');
+        console.error('❌ Errore login: token non ricevuto');
         return false;
       }
     } catch (error) {
