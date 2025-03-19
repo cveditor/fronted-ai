@@ -74,12 +74,15 @@ export const registerUser = async (data) => {
 
 export const getProfile = async () => {
   try {
+    console.log('📡 Invio richiesta profilo con token:', localStorage.getItem('token')); // Debug
     const response = await API.get('/api/users/profile');
+    console.log('📥 Profilo utente ricevuto:', response.data); // Debug
     return response.data;
   } catch (error) {
     console.error('❌ Errore nel recupero del profilo:', error.response?.data?.message || error.message);
-    throw error;
+    return null;
   }
 };
+
 
 export default API;
