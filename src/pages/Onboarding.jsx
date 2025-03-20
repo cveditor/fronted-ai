@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../services/api';
 
-const Onboard = () => {
+const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -45,4 +45,4 @@ const Onboard = () => {
   );
 };
 
-export default Onboard;
+export default Onboarding;
