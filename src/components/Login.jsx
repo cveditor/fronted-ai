@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import API from '../services/api';
+import API, { getProfile } from '../services/api'; // ✅ Import corretto
 import { FaGoogle, FaInstagram, FaTiktok } from 'react-icons/fa';
 
 const Login = () => {
@@ -15,35 +15,37 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    console.log('📝 Dati inseriti:', { email, password }); // Debug
-  
+
+    console.log('📝 Dati inseriti:', { email, password });
+
     if (!email.trim() || !password.trim()) {
       setError('⚠️ Inserisci email e password.');
       return;
     }
-  
+
     try {
       setLoading(true);
       const response = await API.post('/api/auth/login', { email, password });
-  
-      console.log('📥 Risposta API login:', response.data); // Debug
-  
+
+      console.log('📥 Risposta API login:', response.data);
+
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        
+
         console.log('🔑 Token salvato:', response.data.token);
         console.log('👤 Utente salvato:', response.data.user);
-  
-        // 🔹 Recuperiamo il profilo subito dopo il login
+
+        // ✅ Recupero del profilo
         const profile = await getProfile();
         if (!profile) {
-          setError('⚠️ Errore nel recupero del profilo');
-          return;
+          console.warn('⚠️ Nessun profilo trovato, ma login effettuato');
+        } else {
+          console.log('📡 Profilo utente ricevuto:', profile);
         }
-  
-        navigate(response.data.redirectUrl || '/dashboard'); 
+
+        // ✅ Redirect corretto
+        navigate(response.data.redirectUrl || '/dashboard');
       } else {
         setError('Errore: nessun token ricevuto.');
       }
@@ -54,8 +56,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
-  
 
   return (
     <div className="p-10 max-w-md mx-auto bg-white rounded-lg shadow-md">
