@@ -5,7 +5,8 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);  // Aggiunto lo stato di caricamento
+  const [loading, setLoading] = useState(true);
+  const [socket, setSocket] = useState(null); // Stato per WebSocket
 
   useEffect(() => {
     try {
@@ -21,13 +22,28 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
-      localStorage.removeItem('user'); // Rimuove dati corrotti
+      localStorage.removeItem('user'); 
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // 🔹 Connetti WebSocket solo quando l'utente è autenticato
+  useEffect(() => {
+    if (user) {
+      console.log('📡 Connessione al WebSocket...');
+      const newSocket = new WebSocket(`wss://backend-ai-pxw3.onrender.com/socket.io/?EIO=4&transport=websocket&token=${localStorage.getItem('token')}`);
+
+      newSocket.onopen = () => console.log('✅ WebSocket connesso!');
+      newSocket.onerror = (error) => console.error('❌ Errore WebSocket:', error);
+      newSocket.onclose = () => console.warn('⚠️ WebSocket chiuso.');
+
+      setSocket(newSocket);
+
+      return () => newSocket.close(); // Chiudi WebSocket quando l'utente si disconnette
+    }
+  }, [user]); 
 
   const login = async (email, password) => {
     if (!email || !password) {
@@ -45,6 +61,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
   
+        console.log('🔄 Redirecting to:', response.data.redirectUrl || '/dashboard');
+        window.location.href = response.data.redirectUrl || '/dashboard'; // 🔄 Redirect sicuro
+
         return true;
       } else {
         console.error('❌ Errore login: token o user non ricevuti');
@@ -55,18 +74,20 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   };
-  
-  
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    sessionStorage.clear(); // Pulisce eventuali sessioni attive
+    sessionStorage.clear();
     setUser(null);
+    if (socket) {
+      socket.close(); // Chiude WebSocket
+    }
+    window.location.href = '/login'; // 🔄 Redirect al login
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
