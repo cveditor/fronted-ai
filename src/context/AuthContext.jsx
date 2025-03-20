@@ -1,36 +1,29 @@
 import { createContext, useEffect, useState } from 'react';
 import API from '../services/api';
-import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // ✅ Per gestire il redirect
 
   // 📡 Caricamento utente dal localStorage
   useEffect(() => {
-    try {
-      console.log("🔄 Caricamento AuthContext...");
-      const token = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
+    console.log("🔄 Caricamento AuthContext...");
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
 
-      if (token && storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log("✅ Utente autenticato:", parsedUser);
-      } else {
-        console.warn("⚠️ Nessun utente trovato, logout forzato.");
-        logout(); // Se non c'è l'utente, forziamo il logout
-      }
-    } catch (error) {
-      console.error('❌ Errore nel caricamento utente:', error);
+    if (token && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log("✅ Utente autenticato:", parsedUser);
+    } else {
+      console.warn("⚠️ Nessun utente trovato, logout forzato.");
       logout();
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   }, []);
 
   // 🔑 Funzione di login
@@ -48,14 +41,10 @@ export const AuthProvider = ({ children }) => {
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        setUser(response.data.user); // ✅ FIX: Aggiorna lo stato dell'utente
+        setUser(response.data.user);
         API.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-        const redirectUrl = response.data.redirectUrl || '/dashboard';
-        console.log('🔄 Redirecting to:', redirectUrl);
-        navigate(redirectUrl); // ✅ Redirect con React Router
-
-        return true;
+        return response.data.redirectUrl || '/dashboard'; // ✅ Ora restituisce solo l'URL
       } else {
         console.error('❌ Errore login: token o user non ricevuti');
         return false;
@@ -72,7 +61,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     setUser(null);
     API.defaults.headers.common['Authorization'] = '';
-    navigate('/login'); // ✅ Redirect sicuro al login
   };
 
   return (
