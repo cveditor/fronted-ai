@@ -45,7 +45,7 @@ const Login = () => {
         }
 
         // ✅ Redirect corretto
-        navigate(response.data.redirectUrl || '/dashboard');
+        window.location.href = response.data.redirectUrl || '/dashboard';
       } else {
         setError('Errore: nessun token ricevuto.');
       }
