@@ -37,7 +37,7 @@ const Login = () => {
         console.log('👤 Utente salvato:', response.data.user);
   
         // 🔄 Redirect alla pagina corretta
-        const redirectUrl = response.data.redirectUrl || '/dashboard';
+        const redirectUrl = response.data.redirectUrl.replace(window.location.origin, '') || '/dashboard';
         console.log('🔄 Redirecting to:', redirectUrl);
         navigate(redirectUrl);
       } else {
