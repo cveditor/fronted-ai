@@ -15,48 +15,42 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     console.log('📝 Dati inseriti:', { email, password });
-
-    if (!email.trim() || !password.trim()) {
-      setError('⚠️ Inserisci email e password.');
+  
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+      setError('⚠️ Inserisci email e password correttamente.');
       return;
     }
-
+  
     try {
       setLoading(true);
-      const response = await API.post('/api/auth/login', { email, password });
-
+      const response = await API.post('/api/auth/login', { email: email.trim(), password: password.trim() });
+  
       console.log('📥 Risposta API login:', response.data);
-
+  
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        login(response.data.user, response.data.token);
+  
         console.log('🔑 Token salvato:', response.data.token);
         console.log('👤 Utente salvato:', response.data.user);
-
-        // ✅ Recupero del profilo
-        const profile = await getProfile();
-        if (!profile) {
-          console.warn('⚠️ Nessun profilo trovato, ma login effettuato');
-        } else {
-          console.log('📡 Profilo utente ricevuto:', profile);
-        }
-
-        // ✅ Redirect corretto
-        console.log('🔄 Redirecting to:', response.data.redirectUrl);
-        navigate(response.data.redirectUrl.replace(import.meta.env.VITE_FRONTEND_URL, "")); 
+  
+        // 🔄 Redirect alla pagina corretta
+        const redirectUrl = response.data.redirectUrl || '/dashboard';
+        console.log('🔄 Redirecting to:', redirectUrl);
+        navigate(redirectUrl);
       } else {
         setError('Errore: nessun token ricevuto.');
       }
     } catch (err) {
       console.error('❌ Errore login:', err.response?.data?.message || err.message);
-      setError(err.response?.data?.message || 'Credenziali errate.');
+      setError(err.response?.data?.message || 'Errore durante il login.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-10 max-w-md mx-auto bg-white rounded-lg shadow-md">
