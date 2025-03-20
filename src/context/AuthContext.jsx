@@ -6,7 +6,6 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [socket, setSocket] = useState(null); // Stato per WebSocket
 
   useEffect(() => {
     try {
@@ -19,6 +18,7 @@ export const AuthProvider = ({ children }) => {
 
       if (storedUser && token) {
         setUser(JSON.parse(storedUser));
+        API.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ FIX: Aggiorna il token nelle API
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
@@ -29,22 +29,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 🔹 Connetti WebSocket solo quando l'utente è autenticato
-  useEffect(() => {
-    if (user) {
-      console.log('📡 Connessione al WebSocket...');
-      const newSocket = new WebSocket(`wss://backend-ai-pxw3.onrender.com/socket.io/?EIO=4&transport=websocket&token=${localStorage.getItem('token')}`);
-
-      newSocket.onopen = () => console.log('✅ WebSocket connesso!');
-      newSocket.onerror = (error) => console.error('❌ Errore WebSocket:', error);
-      newSocket.onclose = () => console.warn('⚠️ WebSocket chiuso.');
-
-      setSocket(newSocket);
-
-      return () => newSocket.close(); // Chiudi WebSocket quando l'utente si disconnette
-    }
-  }, [user]); 
-
   const login = async (email, password) => {
     if (!email || !password) {
       console.error('❌ Email e password sono richiesti');
@@ -53,14 +37,15 @@ export const AuthProvider = ({ children }) => {
   
     try {
       const response = await API.post('/api/auth/login', { email, password });
-  
+
       console.log('📥 Risposta API login:', response.data);
   
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-        setUser(response.data.user);
-  
+        setUser(response.data.user); // ✅ FIX: Aggiorna lo stato dell'utente
+        API.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`; // ✅ FIX: Aggiorna il token nelle API
+
         console.log('🔄 Redirecting to:', response.data.redirectUrl || '/dashboard');
         window.location.href = response.data.redirectUrl || '/dashboard'; // 🔄 Redirect sicuro
 
@@ -78,12 +63,9 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    sessionStorage.clear();
     setUser(null);
-    if (socket) {
-      socket.close(); // Chiude WebSocket
-    }
-    window.location.href = '/login'; // 🔄 Redirect al login
+    API.defaults.headers.common['Authorization'] = ''; // ✅ FIX: Rimuove il token dalle richieste API
+    window.location.href = '/login'; 
   };
 
   return (
