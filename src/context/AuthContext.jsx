@@ -9,17 +9,24 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
-      const storedToken = localStorage.getItem('token');
+      const token = localStorage.getItem('token');
 
-      if (storedUser && storedToken) {
+      console.log("🔄 Caricamento AuthContext...");
+      console.log("📡 Token trovato:", token);
+      console.log("👤 Utente trovato:", storedUser);
+
+      if (storedUser && token) {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
       localStorage.removeItem('user'); // Rimuove dati corrotti
       localStorage.removeItem('token');
+    } finally {
+      setLoading(false);
     }
   }, []);
+
 
   const login = async (email, password) => {
     if (!email || !password) {
@@ -45,17 +52,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('❌ Errore login:', error.response?.data?.message || error.message);
       return false;
-    }
-  };
-  const getProfile = async () => {
-    try {
-      console.log('📡 Invio richiesta profilo con token:', localStorage.getItem('token')); // Debug
-      const response = await API.get('/api/users/profile');
-      console.log('📥 Profilo utente ricevuto:', response.data); // Debug
-      return response.data;
-    } catch (error) {
-      console.error('❌ Errore nel recupero del profilo:', error.response?.data?.message || error.message);
-      return null;
     }
   };
   

@@ -23,26 +23,21 @@ API.interceptors.request.use(
 );
 
 // Interceptor per gestire errori di autenticazione
-API.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    console.error('❌ Errore API:', error); // 🔍 Debug generale
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    console.log("📡 Token attuale inviato:", token); // <-- Debug importante
 
-    if (error.response) {
-      console.log('📢 Errore risposta API:', error.response.status, error.response.data);
-    } else if (error.request) {
-      console.log('⚠️ Nessuna risposta dal server:', error.request);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     } else {
-      console.log('🚨 Errore generico:', error.message);
+      console.warn("⚠️ Nessun token trovato nel localStorage!");
     }
 
-    if (error.response?.status === 401) {
-      console.warn('🔒 Token scaduto, effettuare il logout');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-
+    return config;
+  },
+  (error) => {
+    console.error('❌ Errore nella richiesta API:', error);
     return Promise.reject(error);
   }
 );

@@ -32,7 +32,7 @@ const Login = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
-
+        login(response.data.user, response.data.token);
         console.log('🔑 Token salvato:', response.data.token);
         console.log('👤 Utente salvato:', response.data.user);
 
@@ -45,7 +45,8 @@ const Login = () => {
         }
 
         // ✅ Redirect corretto
-        window.location.href = response.data.redirectUrl || '/dashboard';
+        console.log('🔄 Redirecting to:', response.data.redirectUrl);
+        navigate(response.data.redirectUrl.replace(import.meta.env.VITE_FRONTEND_URL, "")); 
       } else {
         setError('Errore: nessun token ricevuto.');
       }
