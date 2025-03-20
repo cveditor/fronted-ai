@@ -6,12 +6,10 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: process.env.PORT || 5173,
+    historyApiFallback: true,
     chunkSizeWarningLimit: 1000, // 🔥 Aumenta il limite a 1000kb (puoi aumentarlo ancora se necessario)
   },
-  server:{
-    historyApiFallback: true,
-    chunkSizeWarningLimit: 1000
-  },
+  
   preview: {
     host: '0.0.0.0',
     port: process.env.PORT || 4173,
