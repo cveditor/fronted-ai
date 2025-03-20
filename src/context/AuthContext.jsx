@@ -32,19 +32,21 @@ export const AuthProvider = ({ children }) => {
       console.error('❌ Email e password sono richiesti');
       return false;
     }
-
+  
     try {
       const response = await API.post('/api/auth/login', { email, password });
-
+  
       console.log('📥 Risposta API login:', response.data);
-
+  
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
+  
+        // 🔹 Assicura che il token venga aggiunto correttamente
         API.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-
-        return response.data.redirectUrl || '/dashboard'; // ✅ Ora restituisce solo l'URL
+  
+        return response.data.redirectUrl || '/dashboard';
       } else {
         console.error('❌ Errore login: token o user non ricevuti');
         return false;
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       return false;
     }
   };
+  
 
   // 🚪 Funzione di logout
   const logout = () => {

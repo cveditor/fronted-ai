@@ -20,6 +20,7 @@ import AccessDenied from './pages/AccessDenied';
 
 const App = () => {
   return (
+    <BrowserRouter>
     <AuthProvider>
       <Router>
         <Navbar />
@@ -45,6 +46,7 @@ const App = () => {
         </div>
       </Router>
     </AuthProvider>
+    </BrowserRouter>
   );
 };
 
