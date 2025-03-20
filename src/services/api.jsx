@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://backend-ai-pxw3.onrender.com',
+  baseURL: import.meta.env.VITE_API_URL || 'https://backend-ai.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,22 +11,7 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    console.error('Errore nella richiesta API:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Interceptor per gestire errori di autenticazione
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    console.log("📡 Token attuale inviato:", token); // <-- Debug importante
+    console.log("📡 Token attuale inviato:", token); 
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -56,28 +41,5 @@ export const loginUser = async (data) => {
     throw error;
   }
 };
-
-export const registerUser = async (data) => {
-  try {
-    const response = await API.post('/api/auth/register', data);
-    return response.data;
-  } catch (error) {
-    console.error('❌ Errore nella registrazione:', error.response?.data?.message || error.message);
-    throw error;
-  }
-};
-
-export const getProfile = async () => {
-  try {
-    console.log('📡 Invio richiesta profilo con token:', localStorage.getItem('token')); // Debug
-    const response = await API.get('/api/users/profile');
-    console.log('📥 Profilo utente ricevuto:', response.data); // Debug
-    return response.data;
-  } catch (error) {
-    console.error('❌ Errore nel recupero del profilo:', error.response?.data?.message || error.message);
-    return null;
-  }
-};
-
 
 export default API;
