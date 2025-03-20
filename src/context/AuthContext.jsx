@@ -1,53 +1,59 @@
 import { createContext, useEffect, useState } from 'react';
 import API from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // ✅ Per gestire il redirect
 
+  // 📡 Caricamento utente dal localStorage
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
-
       console.log("🔄 Caricamento AuthContext...");
-      console.log("📡 Token trovato:", token);
-      console.log("👤 Utente trovato:", storedUser);
+      const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
 
-      if (storedUser && token) {
-        setUser(JSON.parse(storedUser));
-        API.defaults.headers.common['Authorization'] = `Bearer ${token}`; // ✅ FIX: Aggiorna il token nelle API
+      if (token && storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.log("✅ Utente autenticato:", parsedUser);
+      } else {
+        console.warn("⚠️ Nessun utente trovato, logout forzato.");
+        logout(); // Se non c'è l'utente, forziamo il logout
       }
     } catch (error) {
-      console.error('❌ Errore nel caricamento utente dal localStorage:', error);
-      localStorage.removeItem('user'); 
-      localStorage.removeItem('token');
+      console.error('❌ Errore nel caricamento utente:', error);
+      logout();
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // 🔑 Funzione di login
   const login = async (email, password) => {
     if (!email || !password) {
       console.error('❌ Email e password sono richiesti');
       return false;
     }
-  
+
     try {
       const response = await API.post('/api/auth/login', { email, password });
 
       console.log('📥 Risposta API login:', response.data);
-  
+
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user); // ✅ FIX: Aggiorna lo stato dell'utente
-        API.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`; // ✅ FIX: Aggiorna il token nelle API
+        API.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
 
-        console.log('🔄 Redirecting to:', response.data.redirectUrl || '/dashboard');
-        window.location.href = response.data.redirectUrl || '/dashboard'; // 🔄 Redirect sicuro
+        const redirectUrl = response.data.redirectUrl || '/dashboard';
+        console.log('🔄 Redirecting to:', redirectUrl);
+        navigate(redirectUrl); // ✅ Redirect con React Router
 
         return true;
       } else {
@@ -60,12 +66,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 🚪 Funzione di logout
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    API.defaults.headers.common['Authorization'] = ''; // ✅ FIX: Rimuove il token dalle richieste API
-    window.location.href = '/login'; 
+    API.defaults.headers.common['Authorization'] = '';
+    navigate('/login'); // ✅ Redirect sicuro al login
   };
 
   return (
