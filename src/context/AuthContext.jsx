@@ -21,31 +21,31 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('❌ Errore nel caricamento utente dal localStorage:', error);
-      localStorage.removeItem('user'); 
+      localStorage.removeItem('user'); // Rimuove dati corrotti
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
   }, []);
 
+
   const login = async (email, password) => {
     if (!email || !password) {
       console.error('❌ Email e password sono richiesti');
       return false;
     }
-
+  
     try {
-      setLoading(true);
       const response = await API.post('/api/auth/login', { email, password });
-
+  
       console.log('📥 Risposta API login:', response.data);
-
+  
       if (response.data.token && response.data.user) {
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
-
-        return response.data.redirectUrl || '/dashboard';
+  
+        return true;
       } else {
         console.error('❌ Errore login: token o user non ricevuti');
         return false;
@@ -53,20 +53,20 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('❌ Errore login:', error.response?.data?.message || error.message);
       return false;
-    } finally {
-      setLoading(false);
     }
   };
+  
+  
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    sessionStorage.clear();
+    sessionStorage.clear(); // Pulisce eventuali sessioni attive
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
